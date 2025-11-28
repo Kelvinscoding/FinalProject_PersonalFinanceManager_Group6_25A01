@@ -128,12 +128,14 @@
     <ClCompile Include="Income.cpp" />
     <ClCompile Include="IncomeSource.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Wallet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Expense.h" />
     <ClInclude Include="ExpenseCategory.h" />
     <ClInclude Include="Income.h" />
     <ClInclude Include="IncomeSource.h" />
+    <ClInclude Include="Wallet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
