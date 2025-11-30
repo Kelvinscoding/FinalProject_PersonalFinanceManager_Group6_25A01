@@ -15,39 +15,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\Expense.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Income.cpp">
+    <ClCompile Include="src\ExpenseCategory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Expense.cpp">
+    <ClCompile Include="src\Income.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ExpenseCategory.cpp">
+    <ClCompile Include="src\IncomeSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IncomeSource.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Wallet.cpp">
+    <ClCompile Include="src\Wallet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Income.h">
+    <ClInclude Include="include\Expense.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Expense.h">
+    <ClInclude Include="include\ExpenseCategory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExpenseCategory.h">
+    <ClInclude Include="include\Income.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IncomeSource.h">
+    <ClInclude Include="include\IncomeSource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Wallet.h">
+    <ClInclude Include="include\Wallet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
