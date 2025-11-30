@@ -50,7 +50,7 @@
     <ClInclude Include="include\Wallet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DynamicArray.h">
+    <ClInclude Include="include\DynamicArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
