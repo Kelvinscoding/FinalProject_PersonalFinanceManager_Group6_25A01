@@ -27,6 +27,7 @@
     <ClCompile Include="src\Wallet.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DynamicArray.h" />
     <ClInclude Include="include\Expense.h" />
     <ClInclude Include="include\ExpenseCategory.h" />
     <ClInclude Include="include\Income.h" />
