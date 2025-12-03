@@ -20,11 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Expense.cpp" />
-    <ClCompile Include="src\ExpenseCategory.cpp" />
     <ClCompile Include="src\Income.cpp" />
-    <ClCompile Include="src\IncomeSource.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Wallet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\DynamicArray.h" />
