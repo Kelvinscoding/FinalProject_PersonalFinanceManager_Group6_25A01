@@ -1,20 +1,20 @@
 #pragma once
-#include <string>
+#include <string> 
 
 class ExpenseCategory {
 private:
-	std::string categoryCode;
-	std::string categoryName;
-
+    std::string id;
+    std::string name;
 public:
-	// Constructor
-	ExpenseCategory(const std::string& code = "", const std::string& name = "")
-		: categoryCode(code), categoryName(name) {}
-
-	// Getters
-	std::string getCode() const { return categoryCode; }
-	std::string getName() const { return categoryName; }
-
-	// Setters
-	void setName(const std::string& newName) { categoryName = newName; }
+    ExpenseCategory() : id(""), name("") {}
+    ExpenseCategory(std::string newId, std::string newName) {
+        id = newId;
+        name = newName;
+    }
+    std::string getId() const {
+        return id;
+    }
+    std::string getName() const {
+        return name;
+    }
 };

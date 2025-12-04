@@ -3,25 +3,26 @@
 
 class Wallet {
 private:
-	std::string walletCode;
-	std::string walletName;
-	double currentBalance;
-
+    std::string id;
+    std::string name;
+    long long balance;
 public:
-	// Constructor
-	Wallet(const std::string& code = "", const std::string& name = "", double initialBalance = 0.0)
-		: walletCode(code), walletName(name), currentBalance(initialBalance) {}
-
-	// Getters
-	std::string getCode() const { return walletCode; }
-	std::string getName() const { return walletName; }
-	double getBalance() const { return currentBalance; }
-
-	// Setters
-	void setName(const std::string& newName) { walletName = newName; }
-
-    // Update Balance
-	void updateBalance(double amount) { 
-		currentBalance += amount; 
-	}
+    Wallet() : id(""), name(""), balance(0) {}
+    Wallet(std::string newId, std::string newName, long long start = 0) {
+        id = newId;
+        name = newName;
+        balance = start;
+    }
+    std::string getId() const { 
+        return id; 
+    }
+    std::string getName() const { 
+        return name; 
+    }
+    long long getBalance() const { 
+        return balance; 
+    }
+    void setBalance(long long newBalance) {
+        balance = newBalance;
+    }
 };

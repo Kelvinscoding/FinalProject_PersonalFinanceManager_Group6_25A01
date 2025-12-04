@@ -3,18 +3,18 @@
 
 class IncomeSource {
 private:
-	std::string sourceCode;
-	std::string sourceName;
-
+    std::string id;
+    std::string name;
 public:
-	// Constructor
-	IncomeSource(const std::string& code = "", const std::string& name = "")
-		: sourceCode(code), sourceName(name) {}
-
-	// Getters
-	std::string getCode() const { return sourceCode; }
-	std::string getName() const { return sourceName; }
-
-	// Setters
-	void setName(const std::string& newName) { sourceName = newName; }
+    IncomeSource() : id(""), name("") {}
+    IncomeSource(std::string newId, std::string newName) {
+        id = newId;
+        name = newName;
+    }
+    std::string getId() const {
+        return id;
+    }
+    std::string getName() const {
+        return name;
+    }
 };
