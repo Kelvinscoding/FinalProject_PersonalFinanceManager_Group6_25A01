@@ -27,6 +27,7 @@
     <ClInclude Include="include\date.h" />
     <ClInclude Include="include\DynamicArray.h" />
     <ClInclude Include="include\ExpenseCategory.h" />
+    <ClInclude Include="include\FileManager.h" />
     <ClInclude Include="include\IncomeSource.h" />
     <ClInclude Include="include\Transaction.h" />
     <ClInclude Include="include\Wallet.h" />

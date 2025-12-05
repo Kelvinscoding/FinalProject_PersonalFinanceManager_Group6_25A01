@@ -69,6 +69,10 @@ public:
 		return data[idx];
 	}
 
+	const T& operator[] (long long idx) const {
+		return data[idx];
+	}
+
 	void remove(long long index) {
 		if (index < 0 || index >= cnt) return;
 		for (long long i = index; i < cnt - 1; i++) {
