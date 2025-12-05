@@ -20,19 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Expense.cpp" />
-    <ClCompile Include="src\ExpenseCategory.cpp" />
     <ClCompile Include="src\Income.cpp" />
-    <ClCompile Include="src\IncomeSource.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Wallet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\date.h" />
     <ClInclude Include="include\DynamicArray.h" />
-    <ClInclude Include="include\Expense.h" />
     <ClInclude Include="include\ExpenseCategory.h" />
-    <ClInclude Include="include\Income.h" />
     <ClInclude Include="include\IncomeSource.h" />
+    <ClInclude Include="include\Transaction.h" />
     <ClInclude Include="include\Wallet.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
