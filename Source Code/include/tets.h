@@ -38,6 +38,7 @@ public:
 	int getDay() const { return day; }
 	int getMonth() const { return month; }
 	int getYear() const { return year; }
+
 	//Output
 	void outputDate(std::ostream& os = std::cout) const {
 		os << day << "-" << month << "-" << year;
