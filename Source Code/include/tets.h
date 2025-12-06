@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
-
+//Testing conflict
 class Date {
 private:
 	int day;
