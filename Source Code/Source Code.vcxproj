@@ -29,6 +29,7 @@
     <ClInclude Include="include\ExpenseCategory.h" />
     <ClInclude Include="include\FileManager.h" />
     <ClInclude Include="include\IncomeSource.h" />
+    <ClInclude Include="include\tets.h" />
     <ClInclude Include="include\Transaction.h" />
     <ClInclude Include="include\Wallet.h" />
   </ItemGroup>
