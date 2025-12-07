@@ -9,19 +9,20 @@ private:
 	int month;
 	int year;
 
+public:
+
 	//Helper Functions
-	bool isLeap(int y) const {
+	static bool isLeap(int y)  {
 		return (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
 	}
 
-	int daysInMonth(int m, int y) const {
+	static int daysInMonth(int m, int y)  {
 		if (m < 1 || m > 12) return 0;
 		const int days[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 		if (m == 2 && isLeap(y)) return 29;
 		return days[m];
 	}
 
-public:
 
 	Date(int d = 1, int m = 1, int y = 2025) : day(d), month(m), year(y) {}
 	static Date getCurrentDate() {

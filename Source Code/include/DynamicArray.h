@@ -1,5 +1,7 @@
 #pragma once
 #include <initializer_list>
+#include <string>
+#include <iostream>
 template <typename T>
 
 /// <summary>
@@ -47,6 +49,22 @@ public:
 		}
 	}
 
+	std::string generateNewId(std::string prefix) const{
+		long long maxVal = 0;
+		for (long long i = 0; i < cnt; i++) {
+			std::string id = data[i].getId();
+			if (id.find(prefix) == 0) {
+				try {
+					std::string numPart = id.substr(prefix.length());
+					long long val = std::stoll(numPart);
+					if (val > maxVal) maxVal = val;
+				}
+				catch (...) {}
+			}
+		}
+		return prefix + std::to_string(maxVal + 1);
+	}
+
 	void resize(long long newCapac) {
 		T* temp = new T[newCapac];
 		for (long long i = 0; i < cnt; ++i) {
@@ -86,11 +104,11 @@ public:
 		data = nullptr;
 	}
 
-	long long size(){
+	long long size() const {
 		return cnt;
 	}
 
-	long long length(){
+	long long length() const {
 		return cnt;
 	}
 };
