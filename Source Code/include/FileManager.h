@@ -6,6 +6,7 @@
 #include "Wallet.h"
 #include "ExpenseCategory.h"
 #include "IncomeSource.h"
+#include "Recurring.h"
 
 class FileManager {
 public:
@@ -14,6 +15,7 @@ public:
         const DynamicArray<IncomeSource>& sources,
         const DynamicArray<ExpenseCategory>& categories,
         const DynamicArray<Transaction>& transactions,
+        const DynamicArray<RecurringTask>& recurring,
         const std::string& filename = "data.bin")
     {
         std::ofstream out(filename, std::ios::binary);
@@ -25,6 +27,7 @@ public:
         saveList(out, sources);
         saveList(out, categories);
         saveList(out, transactions);
+        saveList(out, recurring);
 
         out.close();
         return true;
@@ -35,6 +38,7 @@ public:
         DynamicArray<IncomeSource>& sources,
         DynamicArray<ExpenseCategory>& categories,
         DynamicArray<Transaction>& transactions,
+        DynamicArray<RecurringTask>& recurring,
         const std::string& filename = "data.bin")
     {
         std::ifstream in(filename, std::ios::binary);
@@ -48,6 +52,7 @@ public:
         loadList(in, sources);
         loadList(in, categories);
         loadList(in, transactions);
+        loadList(in, recurring);
 
         in.close();
         return true;
