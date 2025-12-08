@@ -13,6 +13,7 @@ private:
     std::string walletId;
     std::string categoryId;
     Date nextDue; //Constantly updating the next due date
+    int originalDay; 
 
     void saveString(std::ofstream& out, const std::string& str) const {
         size_t len = str.size();
@@ -29,8 +30,9 @@ private:
 
 public:
 
-    RecurringTask() : id(""), amount(0), type(expense) {
+    RecurringTask() : id(""), amount(0), type(expense), originalDay(1) {
         nextDue = Date::getCurrentDate();
+        originalDay = nextDue.getDay();
     }
 
 
@@ -38,6 +40,8 @@ public:
         std::string wId, std::string cId, Date start)
         : id(tId), type(tType), amount(amt), description(desc),
         walletId(wId), categoryId(cId), nextDue(start) {
+        
+        originalDay = start.getDay(); 
     }
 
     Date getNextDueDate() const { return nextDue; }
@@ -52,7 +56,7 @@ public:
 
     // Advance month
     void advanceDueDate() {
-        int d = nextDue.getDay();
+        int d = originalDay;
         int m = nextDue.getMonth();
         int y = nextDue.getYear();
 
@@ -74,14 +78,18 @@ public:
     //Serialization
     void writeBinary(std::ofstream& out) const {
         out.write(reinterpret_cast<const char*>(&amount), sizeof(amount));
+        
         int typeInt = static_cast<int>(type);
         out.write(reinterpret_cast<const char*>(&typeInt), sizeof(typeInt));
+        
         int d = nextDue.getDay();
         int m = nextDue.getMonth();
         int y = nextDue.getYear();
         out.write(reinterpret_cast<const char*>(&d), sizeof(d));
         out.write(reinterpret_cast<const char*>(&m), sizeof(m));
         out.write(reinterpret_cast<const char*>(&y), sizeof(y));
+
+        out.write(reinterpret_cast<const char*>(&originalDay), sizeof(originalDay));
 
         saveString(out, id);
         saveString(out, description);
@@ -102,6 +110,8 @@ public:
         in.read(reinterpret_cast<char*>(&m), sizeof(m));
         in.read(reinterpret_cast<char*>(&y), sizeof(y));
         nextDue = Date(d, m, y);
+
+        in.read(reinterpret_cast<char*>(&originalDay), sizeof(originalDay));
 
         loadString(in, id);
         loadString(in, description);
