@@ -32,7 +32,7 @@ void clearScreen() {
 }
 
 void pause() {
-    cout << "\nPress Enter to continue...";
+    cout << "\nPress Enter to continue";
     cin.ignore(1000, '\n');
     cin.get();
 }
@@ -46,17 +46,16 @@ void processRecurringTasks() {
         // Check if the task is due (or overdue from missed days)
         while (recurringTasks[i].getNextDueDate() < today || recurringTasks[i].getNextDueDate() == today) {
             
-            // 1. Generate the transaction from the recurring task
+            // Generate the transaction from the recurring task
             string newId = transactions.generateNewId("TRX");
             Transaction t = recurringTasks[i].generateTransaction(newId);
             transactions.push_back(t);
 
-            // 2. Automatically update the wallet balance
+            // Automatically update the wallet balance
             for (long long w = 0; w < wallets.size(); w++) {
                 if (wallets[w].getId() == t.getWalletId()) {
                     long long amt = t.getAmount();
                     
-                    // Logic: If expense, subtract. If income, add.
                     if (t.isExpense()) {
                         wallets[w].setBalance(wallets[w].getBalance() - amt);
                     } else {
@@ -66,7 +65,6 @@ void processRecurringTasks() {
                 }
             }
 
-            // 3. Advance the due date to next month
             recurringTasks[i].advanceDueDate();
             addedCount++;
         }
@@ -79,18 +77,17 @@ void processRecurringTasks() {
 }
 
 
-// 3. DISPLAY & MENU FUNCTIONS
 
 void viewDashboard() {
     clearScreen();
-    cout << "==========================================" << endl;
+    cout << "------------------------------------------" << endl;
     cout << "               DASHBOARD                  " << endl;
-    cout << "==========================================" << endl;
+    cout << "------------------------------------------" << endl;
     
-    // 1. Show Wallets
+    // Show Wallets
     long long totalNetWorth = 0;
     if (wallets.size() == 0) {
-        cout << " [!] No wallets found. Please add one in Settings." << endl;
+        cout << "No wallets found. Please add one in Settings." << endl;
     } else {
         cout << left << setw(20) << "Wallet Name" << right << setw(15) << "Balance (VND)" << endl;
         cout << string(40, '-') << endl;
@@ -103,19 +100,16 @@ void viewDashboard() {
         cout << left << setw(20) << "TOTAL NET WORTH:" << right << setw(15) << totalNetWorth << endl;
     }
     
-    // 2. Show Recent Transactions (Last 5)
-    cout << "\n--- Recent Activity ---" << endl;
+    // Show Recent Transactions (Last 5)
+    cout << "\n---Recent Activity---" << endl;
     if (transactions.size() == 0) {
         cout << " (No transactions yet)" << endl;
     } else {
-        // Calculate start index to show only last 5
         long long start = 0;
         if (transactions.size() > 5) start = transactions.size() - 5;
 
         for (long long i = start; i < transactions.size(); i++) {
             Transaction& t = transactions[i];
-            
-            // Format: Date | Description | Amount
             cout << t.getDate().getDay() << "/" << t.getDate().getMonth() << " | "
                  << left << setw(20) << t.getDescription().substr(0, 19);
             
@@ -134,7 +128,7 @@ void viewDashboard() {
 void statisticsMenu() {
     while (true) {
         clearScreen();
-        cout << "=== STATISTICS & REPORTS ===" << endl;
+        cout << "---STATISTICS & REPORTS---" << endl;
         cout << "1. Monthly Overview (Income vs Expense)" << endl;
         cout << "2. View All Transactions" << endl;
         cout << "3. Back to Main Menu" << endl;
@@ -156,7 +150,7 @@ void statisticsMenu() {
             long long totalInc = 0;
             long long totalExp = 0;
 
-            cout << "\n--- Report for " << m << "/" << y << " ---" << endl;
+            cout << "\n---Report for " << m << "/" << y << "---" << endl;
             bool found = false;
             for (long long i = 0; i < transactions.size(); i++) {
                 Date d = transactions[i].getDate();
@@ -168,7 +162,7 @@ void statisticsMenu() {
             }
 
             if (!found) {
-                cout << "No transactions found for this period." << endl;
+                cout << "No transactions found for this period" << endl;
             } else {
                 cout << "Total Income:  + " << totalInc << " VND" << endl;
                 cout << "Total Expense: - " << totalExp << " VND" << endl;
@@ -180,7 +174,7 @@ void statisticsMenu() {
         }
         else if (choice == 2) {
             clearScreen();
-            cout << "=== ALL TRANSACTIONS ===" << endl;
+            cout << "---ALL TRANSACTIONS---" << endl;
             cout << left << setw(12) << "Date" << setw(10) << "Type" << setw(25) << "Description" << right << setw(15) << "Amount" << endl;
             cout << string(65, '-') << endl;
 
@@ -202,7 +196,7 @@ void statisticsMenu() {
 
 void addWallet() {
     string name;
-    cout << "Enter Wallet Name (e.g., Cash, Bank): ";
+    cout << "Enter Wallet Name:";
     cin.ignore();
     getline(cin, name);
     long long bal;
@@ -237,7 +231,7 @@ void addSource() {
 // Add Transaction Menu
 void addTransactionMenu() {
     clearScreen();
-    // Pre-checks
+
     if (wallets.size() == 0) {
         cout << "Error: You must add a Wallet first (Go to Settings)." << endl;
         pause();
@@ -249,7 +243,7 @@ void addTransactionMenu() {
         return;
     }
 
-    cout << "=== ADD NEW TRANSACTION ===" << endl;
+    cout << "---ADD NEW TRANSACTION---" << endl;
     cout << "1. Income" << endl;
     cout << "2. Expense" << endl;
     cout << "Select Type: ";
@@ -262,7 +256,6 @@ void addTransactionMenu() {
 
     flow type = (typeChoice == 1) ? income : expense;
 
-    // 1. Choose Wallet
     cout << "\n--- Select Wallet ---" << endl;
     for (long long i = 0; i < wallets.size(); i++) {
         cout << i + 1 << ". " << wallets[i].getName() << " (Bal: " << wallets[i].getBalance() << ")" << endl;
@@ -270,15 +263,14 @@ void addTransactionMenu() {
     int wIdx;
     cout << "Choice: ";
     cin >> wIdx;
-    // Basic validation
+
     if (wIdx < 1 || wIdx > wallets.size()) return;
     string wId = wallets[wIdx - 1].getId();
 
-    // 2. Choose Category OR Source
     string catSourceId;
-    cout << "\n--- Select Category/Source ---" << endl;
+    cout << "\n---Select Category/Source---" << endl;
     if (type == income) {
-        if (incomeSources.size() == 0) { cout << "No Income Sources defined!" << endl; pause(); return; }
+        if (incomeSources.size() == 0) { cout << "No Income Sources defined" << endl; pause(); return; }
         for (long long i = 0; i < incomeSources.size(); i++) {
             cout << i + 1 << ". " << incomeSources[i].getName() << endl;
         }
@@ -287,7 +279,7 @@ void addTransactionMenu() {
         if (sIdx < 1 || sIdx > incomeSources.size()) return;
         catSourceId = incomeSources[sIdx - 1].getId();
     } else {
-        if (expenseCategories.size() == 0) { cout << "No Expense Categories defined!" << endl; pause(); return; }
+        if (expenseCategories.size() == 0) { cout << "No Expense Categories defined" << endl; pause(); return; }
         for (long long i = 0; i < expenseCategories.size(); i++) {
             cout << i + 1 << ". " << expenseCategories[i].getName() << endl;
         }
@@ -297,24 +289,27 @@ void addTransactionMenu() {
         catSourceId = expenseCategories[cIdx - 1].getId();
     }
 
-    // 3. Enter Details
     long long amount;
     cout << "\nEnter Amount: ";
     cin >> amount;
+    if (cin.fail()) {
+        cin.clear(); cin.ignore(1000, '\n');
+        cout << "Invalid amount" << endl;
+        return;
+    }
     
     string desc;
     cout << "Enter Description: ";
     cin.ignore();
     getline(cin, desc);
 
-    // 4. Create and Save
+
     string tId = transactions.generateNewId("TRX");
     Date now = Date::getCurrentDate();
 
     Transaction t(now, type, amount, desc, tId, wId, catSourceId);
     transactions.push_back(t);
 
-    // 5. Update Wallet Balance in Memory
     long long currentBal = wallets[wIdx - 1].getBalance();
     if (type == income) currentBal += amount;
     else currentBal -= amount;
@@ -355,15 +350,15 @@ int main() {
 
     while (true) {
         clearScreen();
-        cout << "==========================================" << endl;
+        cout << "------------------------------------------" << endl;
         cout << "       PERSONAL FINANCE MANAGER           " << endl;
-        cout << "==========================================" << endl;
+        cout << "------------------------------------------" << endl;
         cout << "1. Dashboard (Overview)" << endl;
         cout << "2. Add Transaction" << endl;
         cout << "3. Statistics & Reports" << endl;
         cout << "4. Settings (Wallets/Categories)" << endl;
         cout << "0. Save & Exit" << endl;
-        cout << "==========================================" << endl;
+        cout << "------------------------------------------" << endl;
         cout << "Enter Choice: ";
         
         int choice;
