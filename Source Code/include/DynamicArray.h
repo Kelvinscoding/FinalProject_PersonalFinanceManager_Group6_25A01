@@ -49,6 +49,30 @@ public:
 		}
 	}
 
+	DynamicArray(const DynamicArray<T>& other) {
+		cnt = other.cnt;
+		capacity = other.capacity;
+		data = new T[capacity];
+		for (long long i = 0; i < cnt; i++) {
+			data[i] = other.data[i];
+		}
+	}
+
+	
+	DynamicArray<T>& operator=(const DynamicArray<T>& other) {
+		if (this != &other) {
+			delete[] data;
+
+			cnt = other.cnt;
+			capacity = other.capacity;
+			data = new T[capacity];
+			for (long long i = 0; i < cnt; i++) {
+				data[i] = other.data[i];
+			}
+		}
+		return *this;
+	}
+
 	std::string generateNewId(std::string prefix) const{
 		long long maxVal = 0;
 		for (long long i = 0; i < cnt; i++) {
