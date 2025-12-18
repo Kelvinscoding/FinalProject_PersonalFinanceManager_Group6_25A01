@@ -90,6 +90,7 @@ public:
 	}
 
 	void resize(long long newCapac) {
+		if (newCapac < cnt) { return; }
 		T* temp = new T[newCapac];
 		for (long long i = 0; i < cnt; ++i) {
 			temp[i] = data[i];

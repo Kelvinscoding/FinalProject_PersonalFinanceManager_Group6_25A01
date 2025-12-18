@@ -21,6 +21,8 @@ private:
         in.read(&str[0], len);
     }
 public:
+    void setName(std::string newName) { name = newName; }
+
     ExpenseCategory() : id(""), name("") {}
     ExpenseCategory(std::string newId, std::string newName) {
         id = newId;

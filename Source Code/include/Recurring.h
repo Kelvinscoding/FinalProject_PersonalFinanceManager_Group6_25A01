@@ -14,6 +14,8 @@ private:
     std::string categoryId;
     Date nextDue; //Constantly updating the next due date
     int originalDay; 
+    bool hasEndDate;
+    Date endDate;
 
     void saveString(std::ofstream& out, const std::string& str) const {
         size_t len = str.size();
@@ -29,24 +31,36 @@ private:
     }
 
 public:
+    std::string getWalletId() const {
+        return walletId;
+    }
 
-    RecurringTask() : id(""), amount(0), type(expense), originalDay(1) {
+    std::string getCategoryId() const {
+        return categoryId;
+    }
+
+    RecurringTask() : id(""), amount(0), type(expense), originalDay(1), hasEndDate(false) {
         nextDue = Date::getCurrentDate();
         originalDay = nextDue.getDay();
     }
 
 
     RecurringTask(std::string tId, flow tType, long long amt, std::string desc,
-        std::string wId, std::string cId, Date start)
+        std::string wId, std::string cId, Date start, bool hasEnd, Date endD)
         : id(tId), type(tType), amount(amt), description(desc),
-        walletId(wId), categoryId(cId), nextDue(start) {
+        walletId(wId), categoryId(cId), nextDue(start), hasEndDate(hasEnd), endDate(endD) {
         
         originalDay = start.getDay(); 
     }
 
     Date getNextDueDate() const { return nextDue; }
     std::string getId() const { return id; }
-    std::string getWalletId() const { return walletId; }
+
+    //Check if the Transaction is expired
+    bool isExpired() const {
+        if (!hasEndDate) return false;
+        return nextDue > endDate;
+    }
 
     //Generate the Transaction
     Transaction generateTransaction(std::string newId) const {
@@ -91,7 +105,13 @@ public:
         out.write(reinterpret_cast<const char*>(&y), sizeof(y));
 
         out.write(reinterpret_cast<const char*>(&originalDay), sizeof(originalDay));
-
+        out.write(reinterpret_cast<const char*>(&hasEndDate), sizeof(hasEndDate));
+        if (hasEndDate) {
+            int ed = endDate.getDay(); int em = endDate.getMonth(); int ey = endDate.getYear();
+            out.write(reinterpret_cast<const char*>(&ed), sizeof(ed));
+            out.write(reinterpret_cast<const char*>(&em), sizeof(em));
+            out.write(reinterpret_cast<const char*>(&ey), sizeof(ey));
+        }
         saveString(out, id);
         saveString(out, description);
         saveString(out, walletId);
@@ -113,6 +133,14 @@ public:
         nextDue = Date(d, m, y);
 
         in.read(reinterpret_cast<char*>(&originalDay), sizeof(originalDay));
+        in.read(reinterpret_cast<char*>(&hasEndDate), sizeof(hasEndDate));
+        if (hasEndDate) {
+            int ed, em, ey;
+            in.read(reinterpret_cast<char*>(&ed), sizeof(ed));
+            in.read(reinterpret_cast<char*>(&em), sizeof(em));
+            in.read(reinterpret_cast<char*>(&ey), sizeof(ey));
+            endDate = Date(ed, em, ey);
+        }
 
         loadString(in, id);
         loadString(in, description);

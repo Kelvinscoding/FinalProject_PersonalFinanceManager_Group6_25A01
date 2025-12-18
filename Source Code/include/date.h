@@ -27,11 +27,12 @@ public:
 	Date(int d = 1, int m = 1, int y = 2025) : day(d), month(m), year(y) {}
 	static Date getCurrentDate() {
     time_t now = time(0);
-    struct tm* ltm = localtime(&now);
-    if (ltm) {
-        return Date(ltm->tm_mday, 1 + ltm->tm_mon, 1900 + ltm->tm_year);
-    }
-    return Date(); 
+	struct tm ltm;
+
+	if (localtime_s(&ltm, &now) == 0) {
+		return Date(ltm.tm_mday, 1 + ltm.tm_mon, 1900 + ltm.tm_year);
+	}
+	return Date();
 }
 
 

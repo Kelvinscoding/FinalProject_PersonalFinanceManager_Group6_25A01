@@ -43,9 +43,15 @@ void processRecurringTasks() {
     int errorCount = 0;
 
     for (long long i = 0; i < recurringTasks.size(); i++) {
+        // Check if the task is expired
+        if (recurringTasks[i].isExpired()) {
+            continue;
+        }
         // Check if the task is due
         while (recurringTasks[i].getNextDueDate() < today || recurringTasks[i].getNextDueDate() == today) {
-            
+            if (recurringTasks[i].isExpired()) {
+                break;
+            }
             // Check if the wallet still exists before creating transaction
             bool walletFound = false;
             int walletIndex = -1;
@@ -88,6 +94,24 @@ void processRecurringTasks() {
     }
 }
 
+string getWalletName(string id) {
+    for (long long i = 0; i < wallets.size(); i++)
+        if (wallets[i].getId() == id) return wallets[i].getName();
+    return "Unknown";
+}
+
+string getCategoryName(string id, bool isIncome) {
+    if (isIncome) {
+        for (long long i = 0; i < incomeSources.size(); i++)
+            if (incomeSources[i].getId() == id) return incomeSources[i].getName();
+    }
+    else {
+        for (long long i = 0; i < expenseCategories.size(); i++)
+            if (expenseCategories[i].getId() == id) return expenseCategories[i].getName();
+    }
+    return "Unknown";
+}
+
 void viewDashboard() {
     clearScreen();
     cout << "------------------------------------------" << endl;
@@ -120,8 +144,9 @@ void viewDashboard() {
 
         for (long long i = start; i < transactions.size(); i++) {
             Transaction& t = transactions[i];
+            string wName = getWalletName(t.getWalletId());
             cout << t.getDate().getDay() << "/" << t.getDate().getMonth() << " | "
-                 << left << setw(20) << t.getDescription().substr(0, 19);
+                 << left << setw(15) << wName.substr(0,14) << setw(20) << t.getDescription().substr(0, 19);
             
             if (t.isIncome()) {
                 cout << " | + " << t.getAmount();
@@ -135,13 +160,226 @@ void viewDashboard() {
 }
 
 // STATISTICS & REPORTS MENU
+
+//Input a date from user
+Date inputDate(string prompt) {
+    cout << prompt << endl;
+    int d, m, y;
+    while (true) {
+        cout << "Day: "; cin >> d;
+        cout << "Month: "; cin >> m;
+        cout << "Year: "; cin >> y;
+
+        if (m < 1 || m > 12 || d < 1 || d > 31) {
+            cout << "Invalid date. Try again.\n";
+            continue;
+        }
+        return Date(d, m, y);
+    }
+}
+
+// 1. Time-based Statistics
+void statsTimeRange() {
+    clearScreen();
+    cout << "---TIME RANGE REPORT---" << endl;
+    Date start = inputDate("Enter Start Date:");
+    Date end = inputDate("Enter End Date:");
+
+    long long totalInc = 0;
+    long long totalExp = 0;
+    bool found = false;
+
+    cout << "\nAnalyzing transactions from "
+        << start.getDay() << "/" << start.getMonth() << "/" << start.getYear()
+        << " to "
+        << end.getDay() << "/" << end.getMonth() << "/" << end.getYear() << "..." << endl;
+
+    for (long long i = 0; i < transactions.size(); i++) {
+        Date d = transactions[i].getDate();
+        if (!(d < start) && !(d > end)) {
+            found = true;
+            if (transactions[i].isIncome()) totalInc += transactions[i].getAmount();
+            else totalExp += transactions[i].getAmount();
+        }
+    }
+
+    if (!found) {
+        cout << "\nNo transactions found in this range." << endl;
+    }
+    else {
+        cout << "\n---RESULTS---" << endl;
+        cout << "Total Income:  + " << totalInc << endl;
+        cout << "Total Expense: - " << totalExp << endl;
+        long long net = totalInc - totalExp;
+        cout << "Net Balance:   " << (net >= 0 ? "+ " : "") << net << endl;
+    }
+    pause();
+}
+
+// 2. Time & Wallet-based Statistics
+void statsWalletTime() {
+    clearScreen();
+    if (wallets.size() == 0) { cout << "No wallets." << endl; pause(); return; }
+
+    cout << "---WALLET TIME REPORT---" << endl;
+    for (long long i = 0; i < wallets.size(); i++) {
+        cout << i + 1 << ". " << wallets[i].getName() << endl;
+    }
+    cout << "Select Wallet: ";
+    int wIdx; cin >> wIdx;
+    if (cin.fail() || wIdx < 1 || wIdx > wallets.size()) {
+        cin.clear(); cin.ignore(1000, '\n'); return;
+    }
+    string targetWId = wallets[wIdx - 1].getId();
+
+    Date start = inputDate("\nEnter Start Date:");
+    Date end = inputDate("Enter End Date:");
+
+    long long totalInc = 0;
+    long long totalExp = 0;
+    bool found = false;
+
+    for (long long i = 0; i < transactions.size(); i++) {
+        Transaction& t = transactions[i];
+
+        if (t.getWalletId() == targetWId) {
+            Date d = t.getDate();
+            if (!(d < start) && !(d > end)) {
+                found = true;
+                if (t.isIncome()) totalInc += t.getAmount();
+                else totalExp += t.getAmount();
+            }
+        }
+    }
+
+    cout << "\n---RESULTS FOR " << wallets[wIdx - 1].getName() << "---" << endl;
+    cout << "Total Income:  + " << totalInc << endl;
+    cout << "Total Expense: - " << totalExp << endl;
+    cout << "Net Change:    " << (totalInc - totalExp) << endl;
+    pause();
+}
+
+// 3. Annual Income/Expense Overview
+void statsAnnualOverview() {
+    clearScreen();
+    cout << "---ANNUAL OVERVIEW---" << endl;
+
+    DynamicArray<int> selectedYears;
+    while (true) {
+        cout << "Enter a year to add (e.g. 2024), or 0 to finish selection: ";
+        int y; cin >> y;
+        if (cin.fail()) { cin.clear(); cin.ignore(1000, '\n'); continue; }
+        if (y == 0) break;
+        selectedYears.push_back(y);
+    }
+
+    if (selectedYears.size() == 0) return;
+
+    long long totalInc = 0;
+    long long totalExp = 0;
+
+    for (long long i = 0; i < transactions.size(); i++) {
+        int tYear = transactions[i].getDate().getYear();
+
+        // Check if transaction year is in our selected list
+        bool yearMatch = false;
+        for (long long k = 0; k < selectedYears.size(); k++) {
+            if (selectedYears[k] == tYear) {
+                yearMatch = true; break;
+            }
+        }
+
+        if (yearMatch) {
+            if (transactions[i].isIncome()) totalInc += transactions[i].getAmount();
+            else totalExp += transactions[i].getAmount();
+        }
+    }
+
+    cout << "\n---TOTALS FOR SELECTED YEAR(S)---" << endl;
+    cout << "Total Income:  + " << totalInc << endl;
+    cout << "Total Expense: - " << totalExp << endl;
+    cout << "Net Balance:   " << (totalInc - totalExp) << endl;
+    pause();
+}
+
+// 4. Annual Income/Expense Breakdown
+void statsAnnualBreakdown(bool isIncomeReport) {
+    clearScreen();
+    if (isIncomeReport) cout << "---INCOME SOURCE BREAKDOWN (Year-based)---" << endl;
+    else cout << "---EXPENSE CATEGORY BREAKDOWN (Year-based)---" << endl;
+
+    DynamicArray<int> selectedYears;
+    while (true) {
+        cout << "Enter a year to add (0 to finish): ";
+        int y; cin >> y;
+        if (cin.fail()) { cin.clear(); cin.ignore(1000, '\n'); continue; }
+        if (y == 0) break;
+        selectedYears.push_back(y);
+    }
+    if (selectedYears.size() == 0) return;
+
+    cout << left << setw(25) << (isIncomeReport ? "Source Name" : "Category Name")
+        << right << setw(15) << "Total Amount" << endl;
+    cout << string(40, '-') << endl;
+
+    // Loop through Master Data (Sources or Categories)
+    long long masterSize = isIncomeReport ? incomeSources.size() : expenseCategories.size();
+
+    for (long long m = 0; m < masterSize; m++) {
+        string id;
+        string name;
+        if (isIncomeReport) {
+            id = incomeSources[m].getId();
+            name = incomeSources[m].getName();
+        }
+        else {
+            id = expenseCategories[m].getId();
+            name = expenseCategories[m].getName();
+        }
+
+        long long currentTotal = 0;
+
+        // Sum matching transactions
+        for (long long t = 0; t < transactions.size(); t++) {
+            Transaction& trx = transactions[t];
+
+            // 1. Must match Type (Income/Expense)
+            if (isIncomeReport && !trx.isIncome()) continue;
+            if (!isIncomeReport && trx.isIncome()) continue;
+
+            // 2. Must match ID
+            if (trx.getCategoryId() == id) {
+                // 3. Must match Year
+                int tYear = trx.getDate().getYear();
+                for (long long k = 0; k < selectedYears.size(); k++) {
+                    if (selectedYears[k] == tYear) {
+                        currentTotal += trx.getAmount();
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (currentTotal > 0) {
+            cout << left << setw(25) << name
+                << right << setw(15) << currentTotal << endl;
+        }
+    }
+    pause();
+}
+
 void statisticsMenu() {
     while (true) {
         clearScreen();
         cout << "---STATISTICS & REPORTS---" << endl;
         cout << "1. Monthly overview (Income vs Expense)" << endl;
-        cout << "2. View all transactions" << endl;
-        cout << "3. Back to Main Menu" << endl;
+        cout << "2. Time-based Report (Range)" << endl;
+        cout << "3. Wallet-based Report (Range)" << endl;
+        cout << "4. Annual Overview" << endl;
+        cout << "5. Annual Income Breakdown" << endl;
+        cout << "6. Annual Expense Breakdown" << endl;
+        cout << "7. View All Transactions" << endl;
+        cout << "0. Back to Main Menu" << endl;
         cout << "Choice: ";
         int choice;
         cin >> choice;
@@ -150,54 +388,66 @@ void statisticsMenu() {
             cin.clear(); cin.ignore(1000, '\n'); continue;
         }
 
-        if (choice == 3) break;
+        if (choice == 0) break;
 
-        if (choice == 1) {
-            int m, y;
-            cout << "\nEnter month (1-12): "; cin >> m;
-            cout << "Enter year: "; cin >> y;
+        switch (choice) {
+            case 1: {
+                int m, y;
+                cout << "\nEnter month (1-12): "; cin >> m;
+                cout << "Enter year: "; cin >> y;
 
-            long long totalInc = 0;
-            long long totalExp = 0;
+                long long totalInc = 0;
+                long long totalExp = 0;
 
-            cout << "\n---Report for " << m << "/" << y << "---" << endl;
-            bool found = false;
-            for (long long i = 0; i < transactions.size(); i++) {
-                Date d = transactions[i].getDate();
-                if (d.getMonth() == m && d.getYear() == y) {
-                    found = true;
-                    if (transactions[i].isIncome()) totalInc += transactions[i].getAmount();
-                    else totalExp += transactions[i].getAmount();
+                cout << "\n---Report for " << m << "/" << y << "---" << endl;
+                bool found = false;
+                for (long long i = 0; i < transactions.size(); i++) {
+                    Date d = transactions[i].getDate();
+                    if (d.getMonth() == m && d.getYear() == y) {
+                        found = true;
+                        if (transactions[i].isIncome()) totalInc += transactions[i].getAmount();
+                        else totalExp += transactions[i].getAmount();
+                    }
                 }
+
+                if (!found) {
+                    cout << "No transactions found for this period" << endl;
+                }
+                else {
+                    cout << "Total Income:  + " << totalInc << " VND" << endl;
+                    cout << "Total Expense: - " << totalExp << " VND" << endl;
+
+                    long long net = totalInc - totalExp;
+                    cout << "Net Savings:   " << (net >= 0 ? "+ " : "") << net << " VND" << endl;
+                }
+                pause();
             }
+            case 2: statsTimeRange(); break;
+            case 3: statsWalletTime(); break;
+            case 4: statsAnnualOverview(); break;
+            case 5: statsAnnualBreakdown(true); break;  // Income
+            case 6: statsAnnualBreakdown(false); break; // Expense
+            case 7: {
+                clearScreen();
+                cout << "---ALL TRANSACTIONS---" << endl;
+                cout << left << setw(12) << "Date" << setw(10) << "Type" << setw(25) << "Description" << right << setw(15) << "Amount" << endl;
+                cout << string(65, '-') << endl;
 
-            if (!found) {
-                cout << "No transactions found for this period" << endl;
-            } else {
-                cout << "Total Income:  + " << totalInc << " VND" << endl;
-                cout << "Total Expense: - " << totalExp << " VND" << endl;
+                for (long long i = 0; i < transactions.size(); i++) {
+                    Transaction& t = transactions[i];
+                    string typeStr = t.isIncome() ? "INCOME" : "EXPENSE";
 
-                long long net = totalInc - totalExp;
-                cout << "Net Savings:   " << (net >= 0 ? "+ " : "") << net << " VND" << endl;
+                    cout << t.getDate().getDay() << "/" << t.getDate().getMonth() << "/" << t.getDate().getYear() << "   "
+                        << left << setw(10) << typeStr
+                        << setw(25) << t.getDescription().substr(0, 24)
+                        << right << setw(15) << t.getAmount() << endl;
+                }
+                pause();
             }
-            pause();
-        }
-        else if (choice == 2) {
-            clearScreen();
-            cout << "---ALL TRANSACTIONS---" << endl;
-            cout << left << setw(12) << "Date" << setw(10) << "Type" << setw(25) << "Description" << right << setw(15) << "Amount" << endl;
-            cout << string(65, '-') << endl;
-
-            for (long long i = 0; i < transactions.size(); i++) {
-                Transaction& t = transactions[i];
-                string typeStr = t.isIncome() ? "INCOME" : "EXPENSE";
-
-                cout << t.getDate().getDay() << "/" << t.getDate().getMonth() << "/" << t.getDate().getYear() << "   "
-                    << left << setw(10) << typeStr
-                    << setw(25) << t.getDescription().substr(0, 24)
-                    << right << setw(15) << t.getAmount() << endl;
-            }
-            pause();
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+                pause();
+                break;
         }
     }
 }
@@ -255,7 +505,12 @@ void addRecurringTask() {
     // Details
     long long amount;
     while (true) {
+        cout << "Enter Amount: ";
         if (cin >> amount) {
+            if (amount <= 0) {
+                cout << "Amount must be positive!\n";
+                continue;
+            }
             break;
         } else {
             cout << "Invalid input. Please enter a number." << endl;
@@ -288,9 +543,38 @@ void addRecurringTask() {
     }
     Date startDate(d, m, y);
 
+    // End Date
+    bool hasEnd = false;
+    Date endD;
+
+    cout << "\nDo you want to set an End Date? (y/n): ";
+    char endChoice;
+    cin >> endChoice;
+
+    if (endChoice == 'y' || endChoice == 'Y') {
+        hasEnd = true;
+        cout << "---End Date---" << endl;
+        int ed, em, ey;
+        while (true) {
+            cout << "Day: "; cin >> ed;
+            cout << "Month: "; cin >> em;
+            cout << "Year: "; cin >> ey;
+            if (em < 1 || em > 12 || ed < 1 || ed > 31) {
+                cout << "Invalid date. Try again.\n";
+                continue;
+            }
+            Date tempEnd(ed, em, ey);
+            if (startDate > tempEnd) {
+                cout << "Error: End date cannot be before Start date!\n";
+                continue;
+            }
+            endD = tempEnd;
+            break;
+        }
+    }
 
     string rId = recurringTasks.generateNewId("REC");
-    RecurringTask rt(rId, type, amount, desc, wId, catSourceId, startDate);
+    RecurringTask rt(rId, type, amount, desc, wId, catSourceId, startDate, hasEnd, endD);
     recurringTasks.push_back(rt);
 
     cout << "\nRecurring task added! It will trigger automatically on check" << endl;
@@ -403,7 +687,7 @@ void removeWallet() {
 
     if (choice > 0 && choice <= wallets.size()) {
         cout << "\nWARNING: Deleting this wallet will NOT delete transactions associated with it." << endl;
-        cout << "Those transactions will remain in history but point to a missing wallet." << endl;
+        cout << "Transactions history will show 'Unknown Wallet'." << endl;
         cout << "Any recurring tasks tied to this wallet will also be deleted." << endl;
         cout << "Are you sure? (y/n): ";
         char confirm; cin >> confirm;
@@ -426,6 +710,175 @@ void removeWallet() {
                 cout << "Also removed " << tasksRemoved << " recurring task(s) linked to this wallet." << endl;
             }
         }
+    }
+}
+
+void editWallet() {
+    if (wallets.size() == 0) {
+        cout << "No wallets to edit." << endl;
+        pause(); return;
+    }
+    clearScreen();
+    cout << "---EDIT WALLET NAME---" << endl;
+    for (long long i = 0; i < wallets.size(); i++) {
+        cout << i + 1 << ". " << wallets[i].getName() << endl;
+    }
+    cout << "Select wallet to rename (0 to cancel): ";
+    int choice; cin >> choice;
+
+    if (cin.fail() || choice < 1 || choice > wallets.size()) {
+        cin.clear(); cin.ignore(1000, '\n'); return;
+    }
+
+    string newName;
+    cout << "Enter new name: ";
+    cin.ignore();
+    getline(cin, newName);
+
+    if (!newName.empty()) {
+        wallets[choice - 1].setName(newName);
+        cout << "Wallet renamed successfully." << endl;
+    }
+    pause();
+}
+
+void editCategory() {
+    if (expenseCategories.size() == 0) {
+        cout << "No categories to edit." << endl;
+        pause(); return;
+    }
+    clearScreen();
+    cout << "---EDIT EXPENSE CATEGORY---" << endl;
+    for (long long i = 0; i < expenseCategories.size(); i++) {
+        cout << i + 1 << ". " << expenseCategories[i].getName() << endl;
+    }
+    cout << "Select category to rename (0 to cancel): ";
+    int choice; cin >> choice;
+
+    if (cin.fail() || choice < 1 || choice > expenseCategories.size()) {
+        cin.clear(); cin.ignore(1000, '\n'); return;
+    }
+
+    string newName;
+    cout << "Enter new name: ";
+    cin.ignore();
+    getline(cin, newName);
+
+    if (!newName.empty()) {
+        expenseCategories[choice - 1].setName(newName);
+        cout << "Category renamed successfully." << endl;
+    }
+    pause();
+}
+
+void removeCategory() {
+    if (expenseCategories.size() == 0) {
+        cout << "No expense categories to remove." << endl;
+        pause(); return;
+    }
+    clearScreen();
+    cout << "---REMOVE EXPENSE CATEGORY---" << endl;
+    for (long long i = 0; i < expenseCategories.size(); i++) {
+        cout << i + 1 << ". " << expenseCategories[i].getName() << endl;
+    }
+    cout << "Select category to remove (0 to cancel): ";
+    int choice; cin >> choice;
+
+    if (cin.fail() || choice < 1 || choice > expenseCategories.size()) {
+        cin.clear(); cin.ignore(1000, '\n'); return;
+    }
+
+    cout << "\nWARNING: Deleting this category will NOT delete transactions associated with it." << endl;
+    cout << "Transactions history will show 'Unknown Category'." << endl;
+    cout << "Any recurring tasks tied to this category will also be deleted." << endl;
+    cout << "Are you sure? (y/n): ";
+    char confirm; cin >> confirm;
+
+    if (confirm == 'y' || confirm == 'Y') {
+        string targetId = expenseCategories[choice - 1].getId();
+
+        int tasksRemoved = 0;
+        for (long long i = recurringTasks.size() - 1; i >= 0; i--) {
+            if (recurringTasks[i].getCategoryId() == targetId) {
+                recurringTasks.remove(i);
+                tasksRemoved++;
+            }
+        }
+        expenseCategories.remove(choice - 1);
+        cout << "Category removed." << endl;
+        if (tasksRemoved > 0) {
+            cout << "Also removed " << tasksRemoved << " recurring task(s) linked to this category." << endl;
+        }
+        pause();
+    }
+}
+    
+void editSource() {
+    if (incomeSources.size() == 0) {
+        cout << "No sources to edit." << endl;
+        pause(); return;
+    }
+    clearScreen();
+    cout << "---EDIT INCOME SOURCE---" << endl;
+    for (long long i = 0; i < incomeSources.size(); i++) {
+        cout << i + 1 << ". " << incomeSources[i].getName() << endl;
+    }
+    cout << "Select source to rename (0 to cancel): ";
+    int choice; cin >> choice;
+
+    if (cin.fail() || choice < 1 || choice > incomeSources.size()) {
+        cin.clear(); cin.ignore(1000, '\n'); return;
+    }
+
+    string newName;
+    cout << "Enter new name: ";
+    cin.ignore();
+    getline(cin, newName);
+
+    if (!newName.empty()) {
+        incomeSources[choice - 1].setName(newName);
+        cout << "Source renamed successfully." << endl;
+    }
+    pause();
+}
+
+void removeSource() {
+    if (incomeSources.size() == 0) {
+        cout << "No sources to remove." << endl;
+        pause(); return;
+    }
+    clearScreen();
+    cout << "---REMOVE INCOME SOURCE---" << endl;
+    for (long long i = 0; i < incomeSources.size(); i++) {
+        cout << i + 1 << ". " << incomeSources[i].getName() << endl;
+    }
+    cout << "Select source to remove (0 to cancel): ";
+    int choice; cin >> choice;
+
+    if (cin.fail() || choice < 1 || choice > incomeSources.size()) {
+        cin.clear(); cin.ignore(1000, '\n'); return;
+    }
+    cout << "\nWARNING: Deleting this source will NOT delete transactions associated with it." << endl;
+    cout << "Transactions history will show 'Unknown Category'." << endl;
+    cout << "Any recurring tasks tied to this source will also be deleted." << endl;
+    cout << "Are you sure? (y/n): ";
+    char confirm; cin >> confirm;
+
+    if (confirm == 'y' || confirm == 'Y') {
+        string targetId = incomeSources[choice - 1].getId();
+        int tasksRemoved = 0;
+        for (long long i = recurringTasks.size() - 1; i >= 0; i--) {
+            if (recurringTasks[i].getCategoryId() == targetId) {
+                recurringTasks.remove(i);
+                tasksRemoved++;
+            }
+        }
+        incomeSources.remove(choice - 1);
+        cout << "Source removed." << endl;
+        if (tasksRemoved > 0) {
+            cout << "Also removed " << tasksRemoved << " recurring task(s) linked to this source." << endl;
+        }
+        pause();
     }
 }
 
@@ -514,11 +967,24 @@ void addTransactionMenu() {
     while (true) {
         cout << "\nEnter Amount: ";
         if (cin >> amount) {
+            // Prevent negative amount
+            if (amount <= 0) {
+                cout << "Amount must be positive!" << endl;
+                continue;
+            }
+            // Prevent Overdraft
+            if (type == expense) {
+                long long currentBal = wallets[wIdx - 1].getBalance();
+                if (amount > currentBal) {
+                    cout << "Error: Insufficient funds! (Balance: " << currentBal << ")" << endl;
+                    continue;
+                }
+            }
             break;
-        } else {
+        }
+        else {
             cout << "Invalid input. Please enter a number." << endl;
-            cin.clear();
-            cin.ignore(1000, '\n');
+            cin.clear(); cin.ignore(1000, '\n');
         }
     }
     
@@ -548,24 +1014,39 @@ void settingsMenu() {
         clearScreen();
         cout << "---MASTER DATA SETTINGS---" << endl;
         cout << "1. Add new Wallet" << endl;
-        cout << "2. Remove Wallet" << endl;
-        cout << "3. Add Expense Category" << endl;
-        cout << "4. Add Income Source" << endl;
-        cout << "5. Back to Main Menu" << endl;
+        cout << "2. Edit Wallet Name" << endl;
+        cout << "3. Remove Wallet" << endl;
+        cout << "------------------" << endl;
+        cout << "4. Add Expense Category" << endl;
+        cout << "5. Edit Category" << endl;
+        cout << "6. Remove Category" << endl;
+        cout << "------------------" << endl;
+        cout << "7. Add Income Source" << endl;
+        cout << "8. Edit Source" << endl;
+        cout << "9. Remove Source" << endl;
+        cout << "------------------" << endl;
+        cout << "0. Back to Main Menu" << endl;
         cout << "Choice: ";
         int c; cin >> c;
         
         if (cin.fail()) { cin.clear(); cin.ignore(1000, '\n'); continue; }
 
-        if (c == 5) break;
+        if (c == 0) break;
 
         switch (c) {
         case 1: addWallet(); break;
-        case 2: removeWallet(); break;
-        case 3: addCategory(); break;
-        case 4: addSource(); break;
+        case 2: editWallet(); break;
+        case 3: removeWallet(); break;
+
+        case 4: addCategory(); break;
+        case 5: editCategory(); break;
+        case 6: removeCategory(); break;
+
+        case 7: addSource(); break;
+        case 8: editSource(); break;
+        case 9: removeSource(); break;
         }
-        if (c >= 1 && c <= 4) pause();
+        if (c == 1 || c == 3 || c == 4 || c == 7) pause();
     }
 }
 

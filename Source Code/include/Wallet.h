@@ -22,6 +22,8 @@ private:
         in.read(&str[0], len);
     }
 public:
+    void setName(std::string newName) { name = newName; }
+
     Wallet() : id(""), name(""), balance(0) {}
 
     Wallet(std::string newId, std::string newName, long long start = 0) {
