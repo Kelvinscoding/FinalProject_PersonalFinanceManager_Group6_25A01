@@ -46,6 +46,7 @@ public:
 
     Date getNextDueDate() const { return nextDue; }
     std::string getId() const { return id; }
+    std::string getWalletId() const { return walletId; }
 
     //Generate the Transaction
     Transaction generateTransaction(std::string newId) const {
