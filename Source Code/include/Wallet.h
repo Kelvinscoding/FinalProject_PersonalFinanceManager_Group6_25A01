@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 
+//HEADER FILE FOR WALLETS
+
 class Wallet {
 private:
     std::string id;

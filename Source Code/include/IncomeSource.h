@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 
+//HEADER FILE FOR INCOME SOURCES
+
 class IncomeSource {
 private:
     std::string id;

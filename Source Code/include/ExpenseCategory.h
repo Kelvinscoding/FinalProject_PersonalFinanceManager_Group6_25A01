@@ -2,6 +2,8 @@
 #include <string> 
 #include <fstream>
 
+//HEADER FILE FOR EXPENSE CATEGORIES
+
 class ExpenseCategory {
 private:
     std::string id;

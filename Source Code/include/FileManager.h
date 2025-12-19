@@ -8,6 +8,8 @@
 #include "IncomeSource.h"
 #include "Recurring.h"
 
+//HEADER FILE FOR FILE MANAGEMENT
+
 class FileManager {
 public:
     //SAVE EVERYTHING

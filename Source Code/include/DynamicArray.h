@@ -5,6 +5,7 @@
 template <typename T>
 
 /// <summary>
+/// HEADER FILE FOR DYNAMIC ARRAY
 /// This header file is written to create a DynamicArray. 
 /// Basic operations: 
 /// 1. Declare a DynamicArray: 

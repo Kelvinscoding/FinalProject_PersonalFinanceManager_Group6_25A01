@@ -3,6 +3,8 @@
 #include <fstream>
 #include "date.h"
 
+//HEADER FILE FOR TRANSACTIONS
+
 enum flow { //Define for both income management and expense management
 	income,
 	expense

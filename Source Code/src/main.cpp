@@ -1,3 +1,4 @@
+//MAIN FILE FOR THE FINANCE MANAGER APP PROJECT
 #include <iostream>
 #include <string>
 #include <iomanip>
@@ -169,7 +170,12 @@ Date inputDate(string prompt) {
         cout << "Day: "; cin >> d;
         cout << "Month: "; cin >> m;
         cout << "Year: "; cin >> y;
-
+        if (cin.fail()) {
+            cout << "Invalid format. Please enter numbers for day, then month and year." << endl;
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
         if (m < 1 || m > 12 || d < 1 || d > 31) {
             cout << "Invalid date. Try again.\n";
             continue;
@@ -393,8 +399,18 @@ void statisticsMenu() {
         switch (choice) {
             case 1: {
                 int m, y;
-                cout << "\nEnter month (1-12): "; cin >> m;
-                cout << "Enter year: "; cin >> y;
+                while (true) {
+                    cout << "\nEnter month (1-12): "; cin >> m;
+                    cout << "Enter year: "; cin >> y;
+                    if (cin.fail()) {
+                        cout << "Invalid input. Please enter numbers." << endl;
+                        cin.clear();
+                        cin.ignore(1000, '\n');
+                    }
+                    else {
+                        break;
+                    }
+                }
 
                 long long totalInc = 0;
                 long long totalExp = 0;
@@ -421,6 +437,7 @@ void statisticsMenu() {
                     cout << "Net Savings:   " << (net >= 0 ? "+ " : "") << net << " VND" << endl;
                 }
                 pause();
+                break;
             }
             case 2: statsTimeRange(); break;
             case 3: statsWalletTime(); break;
@@ -443,6 +460,7 @@ void statisticsMenu() {
                         << right << setw(15) << t.getAmount() << endl;
                 }
                 pause();
+                break;
             }
             default:
                 cout << "Invalid choice. Please try again." << endl;
@@ -476,7 +494,19 @@ void addRecurringTask() {
     for (long long i = 0; i < wallets.size(); i++) {
         cout << i + 1 << ". " << wallets[i].getName() << endl;
     }
-    int wIdx; cout << "Choice: "; cin >> wIdx;
+    int wIdx;
+    while (true) {
+        cout << "Choice: ";
+        cin >> wIdx;
+        if (cin.fail()) {
+            cout << "Invalid input. Enter a number: ";
+            cin.clear();
+            cin.ignore(1000, '\n');
+        }
+        else {
+            break;
+        }
+    }
     if (wIdx < 1 || wIdx > wallets.size()) return;
     string wId = wallets[wIdx - 1].getId();
 
@@ -488,7 +518,19 @@ void addRecurringTask() {
         for (long long i = 0; i < incomeSources.size(); i++) {
              cout << i + 1 << ". " << incomeSources[i].getName() << endl;
         }
-        int sIdx; cout << "Choice: "; cin >> sIdx;
+        int sIdx;
+        while (true) {
+            cout << "Choice: ";
+            cin >> sIdx;
+            if (cin.fail()) {
+                cout << "Invalid input. Enter a number: ";
+                cin.clear();
+                cin.ignore(1000, '\n');
+            }
+            else {
+                break;
+            }
+        }
         if (sIdx < 1 || sIdx > incomeSources.size()) return;
         catSourceId = incomeSources[sIdx-1].getId();
     } else {
@@ -497,7 +539,19 @@ void addRecurringTask() {
         for (long long i = 0; i < expenseCategories.size(); i++) {
              cout << i + 1 << ". " << expenseCategories[i].getName() << endl;
         }
-        int cIdx; cout << "Choice: "; cin >> cIdx;
+        int cIdx;
+        while (true) {
+            cout << "Choice: ";
+            cin >> cIdx;
+            if (cin.fail()) {
+                cout << "Invalid input. Enter a number: ";
+                cin.clear();
+                cin.ignore(1000, '\n');
+            }
+            else {
+                break;
+            }
+        }
         if (cIdx < 1 || cIdx > expenseCategories.size()) return;
         catSourceId = expenseCategories[cIdx-1].getId();
     }
@@ -530,6 +584,12 @@ void addRecurringTask() {
         cout << "Day: "; cin >> d;
         cout << "Month: "; cin >> m;
         cout << "Year: "; cin >> y;
+        if (cin.fail()) {
+            cout << "Invalid format. Please enter numbers for day, then month and year." << endl;
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
         if (m < 1 || m > 12) {
             cout << "Invalid month. Try again.\n";
             continue;
@@ -559,6 +619,12 @@ void addRecurringTask() {
             cout << "Day: "; cin >> ed;
             cout << "Month: "; cin >> em;
             cout << "Year: "; cin >> ey;
+            if (cin.fail()) {
+                cout << "Invalid format. Please enter numbers for day, then month and year." << endl;
+                cin.clear();
+                cin.ignore(1000, '\n');
+                continue;
+            }
             if (em < 1 || em > 12 || ed < 1 || ed > 31) {
                 cout << "Invalid date. Try again.\n";
                 continue;
@@ -596,7 +662,12 @@ void removeRecurringTask() {
     }
     
     cout << "\nSelect number to remove (0 to cancel): ";
-    int choice; cin >> choice;
+    int choice;
+    while (!(cin >> choice)) {
+        cout << "Invalid input. Please enter a number: ";
+        cin.clear();
+        cin.ignore(1000, '\n');
+    }
     
     if (choice > 0 && choice <= recurringTasks.size()) {
         recurringTasks.remove(choice - 1);
@@ -936,7 +1007,11 @@ void addTransactionMenu() {
     }
     int wIdx;
     cout << "Choice: ";
-    cin >> wIdx;
+    while (!(cin >> wIdx)) {
+        cout << "Invalid input. Please enter a number: ";
+        cin.clear();
+        cin.ignore(1000, '\n');
+    }
 
     if (wIdx < 1 || wIdx > wallets.size()) return;
     string wId = wallets[wIdx - 1].getId();
@@ -949,7 +1024,12 @@ void addTransactionMenu() {
             cout << i + 1 << ". " << incomeSources[i].getName() << endl;
         }
         int sIdx;
-        cout << "Choice: "; cin >> sIdx;
+        cout << "Choice: ";
+        while (!(cin >> sIdx)) {
+            cout << "Invalid input. Please enter a number: ";
+            cin.clear();
+            cin.ignore(1000, '\n');
+        }
         if (sIdx < 1 || sIdx > incomeSources.size()) return;
         catSourceId = incomeSources[sIdx - 1].getId();
     } else {
@@ -958,7 +1038,12 @@ void addTransactionMenu() {
             cout << i + 1 << ". " << expenseCategories[i].getName() << endl;
         }
         int cIdx;
-        cout << "Choice: "; cin >> cIdx;
+        cout << "Choice: ";
+        while (!(cin >> cIdx)) {
+            cout << "Invalid input. Please enter a number: ";
+            cin.clear();
+            cin.ignore(1000, '\n');
+        }
         if (cIdx < 1 || cIdx > expenseCategories.size()) return;
         catSourceId = expenseCategories[cIdx - 1].getId();
     }
