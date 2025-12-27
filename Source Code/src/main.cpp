@@ -146,8 +146,12 @@ void viewDashboard() {
         for (long long i = start; i < transactions.size(); i++) {
             Transaction& t = transactions[i];
             string wName = getWalletName(t.getWalletId());
+            string catName = getCategoryName(t.getCategoryId(), t.isIncome());
+
             cout << t.getDate().getDay() << "/" << t.getDate().getMonth() << " | "
-                 << left << setw(15) << wName.substr(0,14) << setw(20) << t.getDescription().substr(0, 19);
+                 << left << setw(15) << wName.substr(0,14) 
+                 << setw(15) << catName.substr(0, 14)
+                 << setw(20) << t.getDescription().substr(0, 19);
             
             if (t.isIncome()) {
                 cout << " | + " << t.getAmount();
@@ -184,7 +188,7 @@ Date inputDate(string prompt) {
     }
 }
 
-// 1. Time-based Statistics
+// 1. Time-based statistics
 void statsTimeRange() {
     clearScreen();
     cout << "---TIME RANGE REPORT---" << endl;
@@ -222,7 +226,7 @@ void statsTimeRange() {
     pause();
 }
 
-// 2. Time & Wallet-based Statistics
+// 2. Time & wallet-based statistics
 void statsWalletTime() {
     clearScreen();
     if (wallets.size() == 0) { cout << "No wallets." << endl; pause(); return; }
@@ -265,7 +269,7 @@ void statsWalletTime() {
     pause();
 }
 
-// 3. Annual Income/Expense Overview
+// 3. Annual income/expense overview
 void statsAnnualOverview() {
     clearScreen();
     cout << "---ANNUAL OVERVIEW---" << endl;
@@ -287,7 +291,7 @@ void statsAnnualOverview() {
     for (long long i = 0; i < transactions.size(); i++) {
         int tYear = transactions[i].getDate().getYear();
 
-        // Check if transaction year is in our selected list
+        // Check if transaction year is in selected list
         bool yearMatch = false;
         for (long long k = 0; k < selectedYears.size(); k++) {
             if (selectedYears[k] == tYear) {
@@ -308,7 +312,7 @@ void statsAnnualOverview() {
     pause();
 }
 
-// 4. Annual Income/Expense Breakdown
+// 4. Annual income/expense breakdown by source/category
 void statsAnnualBreakdown(bool isIncomeReport) {
     clearScreen();
     if (isIncomeReport) cout << "---INCOME SOURCE BREAKDOWN (Year-based)---" << endl;
@@ -328,7 +332,7 @@ void statsAnnualBreakdown(bool isIncomeReport) {
         << right << setw(15) << "Total Amount" << endl;
     cout << string(40, '-') << endl;
 
-    // Loop through Master Data (Sources or Categories)
+    // Loop through sources/categories
     long long masterSize = isIncomeReport ? incomeSources.size() : expenseCategories.size();
 
     for (long long m = 0; m < masterSize; m++) {
@@ -349,13 +353,13 @@ void statsAnnualBreakdown(bool isIncomeReport) {
         for (long long t = 0; t < transactions.size(); t++) {
             Transaction& trx = transactions[t];
 
-            // 1. Must match Type (Income/Expense)
+            // Must match type (income/expense)
             if (isIncomeReport && !trx.isIncome()) continue;
             if (!isIncomeReport && trx.isIncome()) continue;
 
-            // 2. Must match ID
+            // Must match ID
             if (trx.getCategoryId() == id) {
-                // 3. Must match Year
+                // Must match Year
                 int tYear = trx.getDate().getYear();
                 for (long long k = 0; k < selectedYears.size(); k++) {
                     if (selectedYears[k] == tYear) {
@@ -1057,7 +1061,7 @@ void addTransactionMenu() {
                 cout << "Amount must be positive!" << endl;
                 continue;
             }
-            // Prevent Overdraft
+            // Prevent overdraft
             if (type == expense) {
                 long long currentBal = wallets[wIdx - 1].getBalance();
                 if (amount > currentBal) {
@@ -1147,7 +1151,7 @@ int main() {
         cout << "------------------------------------------" << endl;
         cout << "       PERSONAL FINANCE MANAGER           " << endl;
         cout << "------------------------------------------" << endl;
-        cout << "1. Dashboard (Overview)" << endl;
+        cout << "1. Dashboard" << endl;
         cout << "2. Add Transaction" << endl;
         cout << "3. Recurring Transactions" << endl;
         cout << "4. Statistics & Reports" << endl;
